@@ -4,12 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import { createOrder, clearError } from '@/features/ordersSlice.js';
 import { selectCartItems, selectCartSubtotal, clearCart } from '@/features/cartSlice.js';
 
+// Calculate shipping cost based on cart subtotal (in paise)
+const calculateShippingCost = (subtotalPaise) => {
+    const subtotalRupees = subtotalPaise / 100;
+    if (subtotalRupees >= 500) {
+        return 0; // Free shipping
+    } else if (subtotalRupees >= 200) {
+        return 30; // ₹30 shipping
+    } else {
+        return 50; // ₹50 shipping
+    }
+};
+
 export default function Checkout() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const cartItems = useSelector(selectCartItems);
     const subtotal = useSelector(selectCartSubtotal);
     const { isLoading, error } = useSelector((state) => state.orders);
+
+    // Calculate shipping cost
+    const shippingCost = calculateShippingCost(subtotal);
+    const estimatedTotal = subtotal + (shippingCost * 100); // Convert shipping to paise
 
     const [formData, setFormData] = useState({
         name: '',
@@ -48,7 +64,7 @@ export default function Checkout() {
                 pincode: formData.pincode
             },
             discountCode: formData.discountCode || undefined,
-            shippingCost: 0
+            shippingCost: shippingCost // Use calculated shipping cost
         };
 
         try {
@@ -242,8 +258,15 @@ export default function Checkout() {
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Shipping</span>
-                                <span className="text-gray-900">Free</span>
+                                <span className={shippingCost === 0 ? 'text-green-600 font-medium' : 'text-gray-900'}>
+                                    {shippingCost === 0 ? 'Free' : `₹${shippingCost.toFixed(2)}`}
+                                </span>
                             </div>
+                            {shippingCost > 0 && (subtotal / 100) < 500 && (
+                                <div className="text-xs text-green-600">
+                                    Add ₹{(500 - subtotal / 100).toFixed(2)} more for free shipping!
+                                </div>
+                            )}
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Tax</span>
                                 <span className="text-gray-900">Calculated on server</span>
@@ -253,7 +276,7 @@ export default function Checkout() {
                         <div className="border-t border-gray-200 pt-4 mt-4">
                             <div className="flex justify-between">
                                 <span className="text-base font-semibold text-gray-900">Estimated Total</span>
-                                <span className="text-base font-semibold text-gray-900">₹{(subtotal / 100).toFixed(2)}</span>
+                                <span className="text-base font-semibold text-gray-900">₹{(estimatedTotal / 100).toFixed(2)}</span>
                             </div>
                             <p className="text-xs text-gray-500 mt-2">Final amount will be calculated with tax and discounts</p>
                         </div>
