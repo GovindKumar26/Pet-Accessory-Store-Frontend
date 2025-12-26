@@ -9,13 +9,14 @@ export default function DiscountShowcase() {
     const discountsState = useSelector((state) => state.discounts);
     const discounts = discountsState?.discounts || [];
     const isLoading = discountsState?.isLoading;
+    const hasFetched = discountsState?.hasFetched;
 
-    // Fetch discounts on component mount - only if not already loaded
+    // Fetch discounts on component mount - only if not already fetched
     useEffect(() => {
-        if (discounts.length === 0 && !isLoading) {
+        if (!hasFetched && !isLoading) {
             dispatch(fetchDiscounts());
         }
-    }, [dispatch, discounts.length, isLoading]);
+    }, [dispatch, hasFetched, isLoading]);
 
     // Get active discounts with error handling
     const activeDiscounts = discounts.filter(d => {

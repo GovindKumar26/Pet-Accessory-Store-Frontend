@@ -69,6 +69,7 @@ const discountsSlice = createSlice({
         discounts: [],
         currentDiscount: null,
         isLoading: false,
+        hasFetched: false,
         error: null
     },
     reducers: {
@@ -88,10 +89,12 @@ const discountsSlice = createSlice({
             })
             .addCase(fetchDiscounts.fulfilled, (state, action) => {
                 state.isLoading = false;
+                state.hasFetched = true;
                 state.discounts = action.payload;
             })
             .addCase(fetchDiscounts.rejected, (state, action) => {
                 state.isLoading = false;
+                state.hasFetched = true;
                 state.error = action.payload;
             })
             // Fetch discount by ID
