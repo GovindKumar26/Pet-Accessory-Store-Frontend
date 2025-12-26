@@ -141,81 +141,136 @@ export default function AdminOrdersTable() {
                 </div>
             ) : (
                 <>
-                    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Customer
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Payment
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {orders.map((order) => (
-                                    <tr key={order._id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">
-                                                #{order.orderNumber || order._id.slice(-8).toUpperCase()}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                {order.items.length} item{order.items.length > 1 ? 's' : ''}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{order.userId?.email || 'N/A'}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{formatDate(order.createdAt)}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(order.status)}-100 text-${getStatusColor(order.status)}-800`}
-                                            >
-                                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getPaymentStatusColor(order.payment.status)}-100 text-${getPaymentStatusColor(order.payment.status)}-800`}
-                                            >
-                                                {order.payment.status.charAt(0).toUpperCase() + order.payment.status.slice(1)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">
-                                                ₹{(order.amount / 100).toFixed(2)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={() => navigate(`/admin/orders/${order._id}`)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                            >
-                                                Manage
-                                            </button>
-                                        </td>
+                    {/* Desktop Table - Hidden on mobile */}
+                    <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Customer
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Payment
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {orders.map((order) => (
+                                        <tr key={order._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    #{order.orderNumber || order._id.slice(-8).toUpperCase()}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{order.userId?.email || 'N/A'}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{formatDate(order.createdAt)}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(order.status)}-100 text-${getStatusColor(order.status)}-800`}
+                                                >
+                                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getPaymentStatusColor(order.payment.status)}-100 text-${getPaymentStatusColor(order.payment.status)}-800`}
+                                                >
+                                                    {order.payment.status.charAt(0).toUpperCase() + order.payment.status.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    ₹{(order.amount / 100).toFixed(2)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => navigate(`/admin/orders/${order._id}`)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    Manage
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Mobile Card Layout - Shown only on mobile */}
+                    <div className="md:hidden space-y-4">
+                        {orders.map((order) => (
+                            <div key={order._id} className="bg-white shadow-md rounded-lg p-4">
+                                {/* Order Header */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <div className="text-sm font-bold text-gray-900">
+                                            #{order.orderNumber || order._id.slice(-8).toUpperCase()}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-bold text-gray-900">
+                                            ₹{(order.amount / 100).toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Customer & Date */}
+                                <div className="text-sm text-gray-600 mb-3">
+                                    <div className="truncate">{order.userId?.email || 'N/A'}</div>
+                                    <div className="text-xs text-gray-400">{formatDate(order.createdAt)}</div>
+                                </div>
+
+                                {/* Status Badges */}
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    <span
+                                        className={`px-2 py-1 text-xs font-semibold rounded-full bg-${getStatusColor(order.status)}-100 text-${getStatusColor(order.status)}-800`}
+                                    >
+                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </span>
+                                    <span
+                                        className={`px-2 py-1 text-xs font-semibold rounded-full bg-${getPaymentStatusColor(order.payment.status)}-100 text-${getPaymentStatusColor(order.payment.status)}-800`}
+                                    >
+                                        {order.payment.status.charAt(0).toUpperCase() + order.payment.status.slice(1)}
+                                    </span>
+                                </div>
+
+                                {/* Manage Button */}
+                                <button
+                                    onClick={() => navigate(`/admin/orders/${order._id}`)}
+                                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                    Manage Order
+                                </button>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Pagination */}
@@ -261,8 +316,8 @@ export default function AdminOrdersTable() {
                                                 key={i + 1}
                                                 onClick={() => handlePageChange(i + 1)}
                                                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${filters.page === i + 1
-                                                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {i + 1}
