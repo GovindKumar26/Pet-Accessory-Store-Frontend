@@ -7,7 +7,7 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/auth/register', userData);
-      localStorage.setItem('accessToken', data.accessToken);
+      // New flow: registration returns a message, not a user (requires email verification)
       return data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || 'Registration failed');
@@ -23,6 +23,14 @@ export const login = createAsyncThunk(
       localStorage.setItem('accessToken', data.accessToken);
       return data;
     } catch (error) {
+      // Check if requires verification
+      if (error.response?.data?.requiresVerification) {
+        return rejectWithValue({
+          message: error.response.data.error,
+          requiresVerification: true,
+          email: error.response.data.email
+        });
+      }
       return rejectWithValue(error.response?.data?.error || 'Login failed');
     }
   }
@@ -52,12 +60,29 @@ export const getCurrentUser = createAsyncThunk(
   }
 );
 
+export const resendVerification = createAsyncThunk(
+  'auth/resendVerification',
+  async (email, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/resend-verification', { email });
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error || 'Failed to resend verification email');
+    }
+  }
+);
+
 const initialState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
-  isInitialized: false
+  isInitialized: false,
+  // Email verification states
+  registrationSuccess: false,
+  registrationMessage: '',
+  requiresVerification: false,
+  verificationEmail: ''
 };
 
 const authSlice = createSlice({
@@ -66,9 +91,23 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.requiresVerification = false;
+      state.verificationEmail = '';
     },
     setInitialized: (state) => {
       state.isInitialized = true;
+    },
+    clearRegistrationState: (state) => {
+      state.registrationSuccess = false;
+      state.registrationMessage = '';
+    },
+    setCredentials: (state, action) => {
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
+      state.isInitialized = true;
+      if (action.payload.accessToken) {
+        localStorage.setItem('accessToken', action.payload.accessToken);
+      }
     }
   },
   extraReducers: (builder) => {
@@ -77,12 +116,23 @@ const authSlice = createSlice({
       .addCase(register.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.registrationSuccess = false;
+        state.registrationMessage = '';
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.isInitialized = true;
+        // New: registration requires verification
+        if (action.payload.requiresVerification) {
+          state.registrationSuccess = true;
+          state.registrationMessage = action.payload.message;
+          state.isAuthenticated = false;
+          state.user = null;
+        } else {
+          // Direct login (for backward compatibility)
+          state.isAuthenticated = true;
+          state.user = action.payload.user;
+          state.isInitialized = true;
+        }
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
@@ -94,6 +144,7 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.requiresVerification = false;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -103,7 +154,13 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        if (typeof action.payload === 'object' && action.payload?.requiresVerification) {
+          state.error = action.payload.message;
+          state.requiresVerification = true;
+          state.verificationEmail = action.payload.email;
+        } else {
+          state.error = action.payload;
+        }
       });
 
     // Logout
@@ -130,8 +187,22 @@ const authSlice = createSlice({
         state.user = null;
         state.isInitialized = true;
       });
+
+    // Resend verification
+    builder
+      .addCase(resendVerification.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(resendVerification.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.registrationMessage = action.payload.message;
+      })
+      .addCase(resendVerification.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
   }
 });
 
-export const { clearError, setInitialized } = authSlice.actions;
+export const { clearError, setInitialized, clearRegistrationState, setCredentials } = authSlice.actions;
 export default authSlice.reducer;

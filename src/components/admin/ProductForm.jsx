@@ -7,24 +7,21 @@ import { toPaise } from '@/utils/formatters.js';
 export default function ProductForm() {
   const { id } = useParams();
   const isEditMode = Boolean(id);
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentProduct, isLoading, error } = useSelector((state) => state.products);
 
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
     price: '',
-    compareAtPrice: '',
     category: '',
-    stock: '',
-    weight: '',
-    dimensions: { length: '', width: '', height: '' },
-    sku: ''
+    inventory: '',
+    tags: ''
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -38,48 +35,41 @@ export default function ProductForm() {
   useEffect(() => {
     if (isEditMode && currentProduct) {
       setFormData({
-        name: currentProduct.name || '',
+        title: currentProduct.title || '',
         description: currentProduct.description || '',
         price: currentProduct.price ? (currentProduct.price / 100).toFixed(2) : '',
-        compareAtPrice: currentProduct.compareAtPrice ? (currentProduct.compareAtPrice / 100).toFixed(2) : '',
         category: currentProduct.category || '',
-        stock: currentProduct.stock || '',
-        weight: currentProduct.weight || '',
-        dimensions: {
-          length: currentProduct.dimensions?.length || '',
-          width: currentProduct.dimensions?.width || '',
-          height: currentProduct.dimensions?.height || ''
-        },
-        sku: currentProduct.sku || ''
+        inventory: currentProduct.inventory || '',
+        tags: currentProduct.tags ? currentProduct.tags.join(', ') : ''
       });
       if (currentProduct.images && currentProduct.images.length > 0) {
-        setImagePreview(currentProduct.images[0]);
+        setImagePreviews(currentProduct.images.map(img => img.url || img));
       }
     }
   }, [currentProduct, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('dimensions.')) {
-      const dimension = name.split('.')[1];
-      setFormData({
-        ...formData,
-        dimensions: { ...formData.dimensions, [dimension]: value }
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setImageFiles(files);
+
+      // Create previews for all selected files
+      const previews = [];
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          previews.push(reader.result);
+          if (previews.length === files.length) {
+            setImagePreviews(previews);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -87,23 +77,24 @@ export default function ProductForm() {
     e.preventDefault();
 
     const productData = new FormData();
-    productData.append('name', formData.name);
+    productData.append('title', formData.title);
     productData.append('description', formData.description);
-    productData.append('price', toPaise(parseFloat(formData.price)));
-    if (formData.compareAtPrice) {
-      productData.append('compareAtPrice', toPaise(parseFloat(formData.compareAtPrice)));
-    }
+    // Send price as string with 2 decimal places to avoid floating-point precision issues
+    productData.append('price', parseFloat(formData.price).toFixed(2));
     productData.append('category', formData.category);
-    productData.append('stock', formData.stock);
-    if (formData.weight) productData.append('weight', formData.weight);
-    if (formData.sku) productData.append('sku', formData.sku);
-    
-    if (formData.dimensions.length && formData.dimensions.width && formData.dimensions.height) {
-      productData.append('dimensions', JSON.stringify(formData.dimensions));
+    productData.append('inventory', formData.inventory);
+
+    // Handle tags (convert comma-separated string to array)
+    if (formData.tags && formData.tags.trim()) {
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      productData.append('tags', tagsArray.join(','));
     }
 
-    if (imageFile) {
-      productData.append('images', imageFile);
+    // Append all image files
+    if (imageFiles.length > 0) {
+      imageFiles.forEach(file => {
+        productData.append('images', file);
+      });
     }
 
     try {
@@ -136,17 +127,17 @@ export default function ProductForm() {
         {/* Basic Info */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
-          
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Product Name *
+              Product Title *
             </label>
             <input
               type="text"
-              id="name"
-              name="name"
+              id="title"
+              name="title"
               required
-              value={formData.name}
+              value={formData.title}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
@@ -182,12 +173,28 @@ export default function ProductForm() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
+              Tags
+            </label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={formData.tags}
+              onChange={handleChange}
+              placeholder="e.g., organic, premium, bestseller (comma-separated)"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="mt-1 text-sm text-gray-500">Separate multiple tags with commas</p>
+          </div>
         </div>
 
         {/* Pricing */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Pricing</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-gray-700">
@@ -202,147 +209,76 @@ export default function ProductForm() {
                 min="0"
                 value={formData.price}
                 onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
-            <div>
-              <label htmlFor="compareAtPrice" className="block text-sm font-medium text-gray-700">
-                Compare at Price (₹)
-              </label>
-              <input
-                type="number"
-                id="compareAtPrice"
-                name="compareAtPrice"
-                step="0.01"
-                min="0"
-                value={formData.compareAtPrice}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+
           </div>
         </div>
 
         {/* Inventory */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Inventory</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="inventory" className="block text-sm font-medium text-gray-700">
                 Stock Quantity *
               </label>
               <input
                 type="number"
-                id="stock"
-                name="stock"
+                id="inventory"
+                name="inventory"
                 required
                 min="0"
-                value={formData.stock}
+                value={formData.inventory}
                 onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
-            <div>
-              <label htmlFor="sku" className="block text-sm font-medium text-gray-700">
-                SKU
-              </label>
-              <input
-                type="text"
-                id="sku"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Shipping</h2>
-          
-          <div>
-            <label htmlFor="weight" className="block text-sm font-medium text-gray-700">
-              Weight (grams)
-            </label>
-            <input
-              type="number"
-              id="weight"
-              name="weight"
-              min="0"
-              value={formData.weight}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Dimensions (cm)
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input
-                type="number"
-                name="dimensions.length"
-                placeholder="Length"
-                step="0.01"
-                min="0"
-                value={formData.dimensions.length}
-                onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="number"
-                name="dimensions.width"
-                placeholder="Width"
-                step="0.01"
-                min="0"
-                value={formData.dimensions.width}
-                onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="number"
-                name="dimensions.height"
-                placeholder="Height"
-                step="0.01"
-                min="0"
-                value={formData.dimensions.height}
-                onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
           </div>
         </div>
 
         {/* Images */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Images</h2>
-          
+
           <div>
             <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-              Product Image
+              Product Images (up to 5)
             </label>
             <input
               type="file"
               id="image"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
+            <p className="mt-1 text-sm text-gray-500">Select up to 5 images. Hold Ctrl/Cmd to select multiple files.</p>
           </div>
 
-          {imagePreview && (
+          {imagePreviews.length > 0 && (
             <div className="mt-4">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="h-48 w-48 object-cover rounded-md border border-gray-300"
-              />
+              <p className="text-sm font-medium text-gray-700 mb-2">Image Previews:</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      className="h-32 w-full object-cover rounded-md border border-gray-300"
+                    />
+                    <span className="absolute top-1 right-1 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
