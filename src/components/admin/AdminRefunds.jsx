@@ -117,94 +117,166 @@ export default function AdminRefunds() {
                     <p className="text-gray-500">No {currentFilter} refunds found</p>
                 </div>
             ) : (
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Order
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Customer
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Reason
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Requested
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {refunds.map((refund) => (
-                                <tr key={refund._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
+                <>
+                    {/* Desktop Table - Hidden on mobile */}
+                    <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Customer
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Amount
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Reason
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Requested
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {refunds.map((refund) => (
+                                        <tr key={refund._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {refund.orderNumber}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{refund.userId?.name || 'N/A'}</div>
+                                                <div className="text-sm text-gray-500">{refund.userId?.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {formatPrice(refund.amount)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-900 max-w-xs truncate">
+                                                    {refund.refundReason || 'No reason provided'}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500">
+                                                    {formatDate(refund.refundRequestedAt)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(refund.refundStatus)}-100 text-${getStatusColor(refund.refundStatus)}-800`}>
+                                                    {refund.refundStatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                <button
+                                                    onClick={() => navigate(`/admin/orders/${refund._id}`)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    View
+                                                </button>
+                                                {refund.refundStatus === 'requested' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleApproveClick(refund)}
+                                                            className="text-green-600 hover:text-green-900"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRejectClick(refund)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Mobile Card Layout - Shown only on mobile */}
+                    <div className="md:hidden space-y-4">
+                        {refunds.map((refund) => (
+                            <div key={refund._id} className="bg-white shadow-md rounded-lg p-4">
+                                {/* Header: Order & Amount */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <div className="text-sm font-bold text-gray-900">
                                             {refund.orderNumber}
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{refund.userId?.name || 'N/A'}</div>
-                                        <div className="text-sm text-gray-500">{refund.userId?.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {formatPrice(refund.amount)}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                                            {refund.refundReason || 'No reason provided'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500">
-                                            {formatDate(refund.refundRequestedAt)}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(refund.refundStatus)}-100 text-${getStatusColor(refund.refundStatus)}-800`}>
+                                        <span className={`mt-1 px-2 py-0.5 inline-flex text-xs font-semibold rounded-full bg-${getStatusColor(refund.refundStatus)}-100 text-${getStatusColor(refund.refundStatus)}-800`}>
                                             {refund.refundStatus}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                        <button
-                                            onClick={() => navigate(`/admin/orders/${refund._id}`)}
-                                            className="text-blue-600 hover:text-blue-900"
-                                        >
-                                            View
-                                        </button>
-                                        {refund.refundStatus === 'requested' && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleApproveClick(refund)}
-                                                    className="text-green-600 hover:text-green-900"
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    onClick={() => handleRejectClick(refund)}
-                                                    className="text-red-600 hover:text-red-900"
-                                                >
-                                                    Reject
-                                                </button>
-                                            </>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-bold text-gray-900">
+                                            {formatPrice(refund.amount)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Customer Info */}
+                                <div className="text-sm text-gray-600 mb-2">
+                                    <div className="font-medium">{refund.userId?.name || 'N/A'}</div>
+                                    <div className="text-xs text-gray-400 truncate">{refund.userId?.email}</div>
+                                </div>
+
+                                {/* Reason */}
+                                <div className="text-sm text-gray-600 mb-2">
+                                    <span className="font-medium text-gray-700">Reason: </span>
+                                    <span className="text-gray-500">{refund.refundReason || 'No reason provided'}</span>
+                                </div>
+
+                                {/* Date */}
+                                <div className="text-xs text-gray-400 mb-3">
+                                    Requested: {formatDate(refund.refundRequestedAt)}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => navigate(`/admin/orders/${refund._id}`)}
+                                        className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                    {refund.refundStatus === 'requested' && (
+                                        <>
+                                            <button
+                                                onClick={() => handleApproveClick(refund)}
+                                                className="flex-1 py-2 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                onClick={() => handleRejectClick(refund)}
+                                                className="flex-1 py-2 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Approve Modal */}

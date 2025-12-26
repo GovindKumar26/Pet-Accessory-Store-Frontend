@@ -98,81 +98,159 @@ export default function AdminReturns() {
                     <p className="text-gray-600">No return requests found</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto bg-white rounded-lg shadow">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {returns.map((ret) => (
-                                <tr key={ret._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{ret.orderNumber}</div>
-                                        <div className="text-sm text-gray-500">₹{(ret.amount / 100).toFixed(2)}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{ret.userId?.name || 'N/A'}</div>
-                                        <div className="text-sm text-gray-500">{ret.userId?.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900 max-w-xs truncate" title={ret.returnRequest?.reason}>
-                                            {ret.returnRequest?.reason}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(ret.returnRequest?.status)}`}>
+                <>
+                    {/* Desktop Table - Hidden on mobile */}
+                    <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {returns.map((ret) => (
+                                    <tr key={ret._id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">{ret.orderNumber}</div>
+                                            <div className="text-sm text-gray-500">₹{(ret.amount / 100).toFixed(2)}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{ret.userId?.name || 'N/A'}</div>
+                                            <div className="text-sm text-gray-500">{ret.userId?.email}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm text-gray-900 max-w-xs truncate" title={ret.returnRequest?.reason}>
+                                                {ret.returnRequest?.reason}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(ret.returnRequest?.status)}`}>
+                                                {ret.returnRequest?.status?.replace('_', ' ')}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {formatDate(ret.returnRequest?.requestedAt)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div className="flex gap-2">
+                                                {ret.returnRequest?.status === 'requested' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleAction(ret, 'approve')}
+                                                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleAction(ret, 'reject')}
+                                                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {['approved', 'pickup_scheduled', 'picked_up'].includes(ret.returnRequest?.status) && (
+                                                    <button
+                                                        onClick={() => handleAction(ret, 'complete')}
+                                                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                                                    >
+                                                        Mark Complete
+                                                    </button>
+                                                )}
+                                                {ret.returnRequest?.status === 'completed' && (
+                                                    <span className="text-green-600 text-xs">✓ Completed</span>
+                                                )}
+                                                {ret.returnRequest?.status === 'rejected' && (
+                                                    <span className="text-red-600 text-xs">✗ Rejected</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card Layout - Shown only on mobile */}
+                    <div className="md:hidden space-y-4">
+                        {returns.map((ret) => (
+                            <div key={ret._id} className="bg-white shadow-md rounded-lg p-4">
+                                {/* Header: Order & Amount */}
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <div className="text-sm font-bold text-gray-900">{ret.orderNumber}</div>
+                                        <span className={`mt-1 px-2 py-0.5 inline-flex text-xs font-medium rounded-full ${getStatusBadge(ret.returnRequest?.status)}`}>
                                             {ret.returnRequest?.status?.replace('_', ' ')}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {formatDate(ret.returnRequest?.requestedAt)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        <div className="flex gap-2">
-                                            {ret.returnRequest?.status === 'requested' && (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleAction(ret, 'approve')}
-                                                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAction(ret, 'reject')}
-                                                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
-                                            {['approved', 'pickup_scheduled', 'picked_up'].includes(ret.returnRequest?.status) && (
-                                                <button
-                                                    onClick={() => handleAction(ret, 'complete')}
-                                                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                                                >
-                                                    Mark Complete
-                                                </button>
-                                            )}
-                                            {ret.returnRequest?.status === 'completed' && (
-                                                <span className="text-green-600 text-xs">✓ Completed</span>
-                                            )}
-                                            {ret.returnRequest?.status === 'rejected' && (
-                                                <span className="text-red-600 text-xs">✗ Rejected</span>
-                                            )}
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-bold text-gray-900">₹{(ret.amount / 100).toFixed(2)}</div>
+                                    </div>
+                                </div>
+
+                                {/* Customer Info */}
+                                <div className="text-sm text-gray-600 mb-2">
+                                    <div className="font-medium">{ret.userId?.name || 'N/A'}</div>
+                                    <div className="text-xs text-gray-400 truncate">{ret.userId?.email}</div>
+                                </div>
+
+                                {/* Reason */}
+                                <div className="text-sm text-gray-600 mb-2">
+                                    <span className="font-medium text-gray-700">Reason: </span>
+                                    <span className="text-gray-500">{ret.returnRequest?.reason || 'No reason provided'}</span>
+                                </div>
+
+                                {/* Date */}
+                                <div className="text-xs text-gray-400 mb-3">
+                                    Requested: {formatDate(ret.returnRequest?.requestedAt)}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-2">
+                                    {ret.returnRequest?.status === 'requested' && (
+                                        <>
+                                            <button
+                                                onClick={() => handleAction(ret, 'approve')}
+                                                className="flex-1 py-2 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                onClick={() => handleAction(ret, 'reject')}
+                                                className="flex-1 py-2 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    )}
+                                    {['approved', 'pickup_scheduled', 'picked_up'].includes(ret.returnRequest?.status) && (
+                                        <button
+                                            onClick={() => handleAction(ret, 'complete')}
+                                            className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                        >
+                                            Mark Complete
+                                        </button>
+                                    )}
+                                    {ret.returnRequest?.status === 'completed' && (
+                                        <div className="flex-1 py-2 px-3 bg-green-100 text-green-800 text-sm font-medium rounded-lg text-center">
+                                            ✓ Completed
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    )}
+                                    {ret.returnRequest?.status === 'rejected' && (
+                                        <div className="flex-1 py-2 px-3 bg-red-100 text-red-800 text-sm font-medium rounded-lg text-center">
+                                            ✗ Rejected
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Action Modal */}
