@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchAdminOrderById, updateOrderStatus, shipOrder, clearError } from '@/features/adminOrdersSlice.js';
 import { formatDate } from '@/utils/formatters.js';
 import ConfirmModal from '@/components/common/ConfirmModal.jsx';
+import api from '@/services/api.js';
 
 export default function AdminOrderDetails() {
     const { id } = useParams();
@@ -13,6 +14,7 @@ export default function AdminOrderDetails() {
     const [selectedStatus, setSelectedStatus] = useState('');
     const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [showShipModal, setShowShipModal] = useState(false);
+    const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
     useEffect(() => {
         dispatch(fetchAdminOrderById(id));
@@ -76,6 +78,29 @@ export default function AdminOrderDetails() {
             alert('Order shipped successfully!');
         } catch (err) {
             console.error('Failed to ship order:', err);
+        }
+    };
+
+    const handleDownloadInvoice = async () => {
+        try {
+            setDownloadingInvoice(true);
+            const response = await api.get(`/admin/orders/${id}/invoice`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Invoice-${currentOrder.orderNumber}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to download invoice:', err);
+            alert('Failed to download invoice. Please try again.');
+        } finally {
+            setDownloadingInvoice(false);
         }
     };
 
@@ -325,6 +350,10 @@ export default function AdminOrderDetails() {
                             <span className="text-gray-600">Payment Method:</span>
                             <span className="text-gray-900">{currentOrder.payment.method.toUpperCase()}</span>
                         </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-600">Payment Status:</span>
+                            <span className="text-gray-900 capitalize">{currentOrder.payment.status}</span>
+                        </div>
                         {currentOrder.status === 'cancelled' && (
                             <>
                                 <div className="flex justify-between">
@@ -346,6 +375,32 @@ export default function AdminOrderDetails() {
                             </>
                         )}
                     </div>
+
+                    {/* Download Invoice Button - Only for paid orders */}
+                    {currentOrder.payment.status === 'paid' && (
+                        <button
+                            onClick={handleDownloadInvoice}
+                            disabled={downloadingInvoice}
+                            className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {downloadingInvoice ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Downloading...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    📄 Download Invoice
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
 

@@ -5,6 +5,7 @@ import { trackOrder, cancelOrder, clearError } from '@/features/ordersSlice.js';
 import { requestReturn, clearSuccess, clearError as clearReturnError } from '@/features/returnsSlice.js';
 import { formatDate } from '@/utils/formatters.js';
 import ConfirmModal from '@/components/common/ConfirmModal.jsx';
+import api from '@/services/api.js';
 
 export default function OrderDetails() {
     const { id } = useParams();
@@ -17,6 +18,7 @@ export default function OrderDetails() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [returnReason, setReturnReason] = useState('');
     const [showReturnForm, setShowReturnForm] = useState(false);
+    const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
     useEffect(() => {
         dispatch(trackOrder(id));
@@ -79,6 +81,30 @@ export default function OrderDetails() {
             dispatch(trackOrder(id));
         } catch (err) {
             console.error('Failed to request return:', err);
+        }
+    };
+
+    const handleDownloadInvoice = async () => {
+        try {
+            setDownloadingInvoice(true);
+            const response = await api.get(`/orders/${id}/invoice`, {
+                responseType: 'blob'
+            });
+
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Invoice-${currentOrder.orderNumber}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to download invoice:', err);
+            alert('Failed to download invoice. Please try again.');
+        } finally {
+            setDownloadingInvoice(false);
         }
     };
 
@@ -226,6 +252,32 @@ export default function OrderDetails() {
                             Method: <span className="font-medium text-gray-900">{currentOrder.payment.method.toUpperCase()}</span>
                         </p>
                     </div>
+
+                    {/* Download Invoice Button - Only for paid orders */}
+                    {currentOrder.payment.status === 'paid' && (
+                        <button
+                            onClick={handleDownloadInvoice}
+                            disabled={downloadingInvoice}
+                            className="mt-4 inline-flex items-center px-4 py-2 bg-velvet-purple text-white text-sm font-medium rounded-md hover:bg-velvet-purple-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-velvet-purple disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {downloadingInvoice ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Downloading...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download Invoice
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
 
                 {/* Cancel Order Section */}
