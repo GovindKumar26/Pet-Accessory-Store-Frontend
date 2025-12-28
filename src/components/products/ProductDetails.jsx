@@ -32,6 +32,12 @@ export default function ProductDetails() {
     const handleAddToCart = () => {
         if (!currentProduct) return;
 
+        // Require login to add to cart
+        if (!user) {
+            navigate('/login', { state: { from: `/products/${currentProduct._id}` } });
+            return;
+        }
+
         if (currentProduct.inventory === 0) {
             return;
         }
