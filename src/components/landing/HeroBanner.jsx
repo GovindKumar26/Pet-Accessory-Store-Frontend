@@ -1,17 +1,33 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchDiscounts } from '@/features/discountsSlice.js';
 
 export default function HeroBanner({ onShopNow }) {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [currentDiscountIndex, setCurrentDiscountIndex] = useState(0);
+    const dispatch = useDispatch();
 
-    // Safely access discounts from Redux store (fetched by DiscountShowcase)
+    // Safely access discounts from Redux store
     const discountsState = useSelector((state) => state.discounts);
     const discounts = discountsState?.discounts || [];
+    const isLoading = discountsState?.isLoading;
+    const hasFetched = discountsState?.hasFetched;
 
-    // Get active discount - use endsAt (correct field name)
-    const activeDiscount = discounts.find(d =>
-        d.active && new Date(d.endsAt) > new Date()
-    );
+    // Fetch discounts on component mount - only if not already fetched
+    useEffect(() => {
+        if (!hasFetched && !isLoading) {
+            dispatch(fetchDiscounts());
+        }
+    }, [dispatch, hasFetched, isLoading]);
+
+    // Get active discounts - use endsAt (correct field name)
+    const activeDiscounts = discounts.filter(d => {
+        try {
+            return d.active && new Date(d.endsAt) > new Date();
+        } catch (error) {
+            return false;
+        }
+    });
 
     const slides = [
         {
@@ -30,6 +46,7 @@ export default function HeroBanner({ onShopNow }) {
         }
     ];
 
+    // Auto-rotate hero carousel
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -37,16 +54,114 @@ export default function HeroBanner({ onShopNow }) {
         return () => clearInterval(timer);
     }, [slides.length]);
 
+    // Auto-rotate discount carousel
+    useEffect(() => {
+        if (activeDiscounts.length > 1) {
+            const timer = setInterval(() => {
+                setCurrentDiscountIndex((prev) => (prev + 1) % activeDiscounts.length);
+            }, 3000); // Change discount every 3 seconds
+            return () => clearInterval(timer);
+        }
+    }, [activeDiscounts.length]);
+
+    const nextDiscount = () => {
+        setCurrentDiscountIndex((prev) => (prev + 1) % activeDiscounts.length);
+    };
+
+    const prevDiscount = () => {
+        setCurrentDiscountIndex((prev) => (prev - 1 + activeDiscounts.length) % activeDiscounts.length);
+    };
+
     return (
         <div className="relative w-full overflow-hidden">
-            {/* Discount Banner */}
-            {activeDiscount && (
-                <div className="bg-gradient-to-r from-orange-100 to-orange-50 py-3 px-4 text-center">
-                    <p className="text-sm md:text-base">
-                        <span className="font-semibold">Use code:</span>
-                        <span className="mx-2 px-3 py-1 bg-white rounded font-bold text-velvet-purple">{activeDiscount.code}</span>
-                        <span className="font-bold text-orange-600">for {activeDiscount.type === 'percentage' ? `${activeDiscount.value}%` : `₹${activeDiscount.value}`} OFF</span>
-                    </p>
+            {/* Discount Carousel Banner */}
+            {activeDiscounts.length > 0 && (
+                <div className="relative bg-gradient-to-r from-velvet-purple via-purple-600 to-velvet-purple py-4 overflow-hidden">
+                    {/* Animated background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=')] animate-pulse"></div>
+                    </div>
+
+                    {/* Left Arrow - only show if multiple discounts */}
+                    {activeDiscounts.length > 1 && (
+                        <button
+                            onClick={prevDiscount}
+                            className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all hover:scale-110"
+                            aria-label="Previous discount"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Carousel Track */}
+                    <div className="relative overflow-hidden mx-12 md:mx-16">
+                        <div
+                            className="flex transition-transform duration-500 ease-in-out"
+                            style={{ transform: `translateX(-${currentDiscountIndex * 100}%)` }}
+                        >
+                            {activeDiscounts.map((discount, index) => (
+                                <div
+                                    key={discount._id}
+                                    className="min-w-full flex-shrink-0"
+                                >
+                                    <div className="text-center px-4">
+                                        <p className="text-sm md:text-base text-white flex items-center justify-center gap-2 flex-wrap">
+                                            <span className="inline-flex items-center">
+                                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                <span className="font-semibold">Special Offer!</span>
+                                            </span>
+                                            <span className="font-medium">Use code:</span>
+                                            <span className="px-3 py-1 bg-velvet-golden text-white rounded-md font-bold tracking-wider shadow-lg">
+                                                {discount.code}
+                                            </span>
+                                            <span className="font-bold text-velvet-golden">
+                                                for {discount.type === 'percentage' ? `${discount.value}%` : `₹${(discount.value / 100).toFixed(2)}`} OFF
+                                            </span>
+                                            {discount.minOrderValue > 0 && (
+                                                <span className="text-xs opacity-90">
+                                                    (Min. order: ₹{(discount.minOrderValue / 100).toFixed(2)})
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Arrow - only show if multiple discounts */}
+                    {activeDiscounts.length > 1 && (
+                        <button
+                            onClick={nextDiscount}
+                            className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2 transition-all hover:scale-110"
+                            aria-label="Next discount"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Carousel indicators - only show if multiple discounts */}
+                    {activeDiscounts.length > 1 && (
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-1.5 pb-1">
+                            {activeDiscounts.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentDiscountIndex(index)}
+                                    className={`h-1 rounded-full transition-all ${index === currentDiscountIndex
+                                            ? 'bg-velvet-golden w-6'
+                                            : 'bg-white/50 hover:bg-white/75 w-1'
+                                        }`}
+                                    aria-label={`Go to discount ${index + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -69,11 +184,6 @@ export default function HeroBanner({ onShopNow }) {
                         {/* Content */}
                         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
                             <div className="max-w-2xl text-white">
-                                {activeDiscount && index === 0 && (
-                                    <div className="inline-block px-4 py-2 bg-velvet-golden rounded-full mb-4 animate-fade-in">
-                                        <span className="text-sm font-semibold">Up to {activeDiscount.type === 'percentage' ? `${activeDiscount.value}%` : `₹${activeDiscount.value}`} OFF</span>
-                                    </div>
-                                )}
                                 <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
                                     {slide.title}
                                 </h1>

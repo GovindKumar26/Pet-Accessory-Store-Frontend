@@ -33,17 +33,14 @@ export default function ProductDetails() {
         if (!currentProduct) return;
 
         if (currentProduct.inventory === 0) {
-            alert('Product is out of stock');
             return;
         }
 
         if (quantity > currentProduct.inventory) {
-            alert(`Only ${currentProduct.inventory} items available`);
             return;
         }
 
         dispatch(addToCart({ product: currentProduct, quantity }));
-        alert(`${currentProduct.title} added to cart!`);
     };
 
     if (isLoading) {

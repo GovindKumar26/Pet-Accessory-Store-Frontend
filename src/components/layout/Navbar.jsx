@@ -57,7 +57,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white" style={{ boxShadow: '0 10px 25px -5px rgba(92, 57, 117, 0.15), 0 8px 10px -6px rgba(92, 57, 117, 0.1)' }}>
+    <nav className="bg-white fixed top-0 left-0 right-0 z-50" style={{ boxShadow: '0 10px 25px -5px rgba(92, 57, 117, 0.15), 0 8px 10px -6px rgba(92, 57, 117, 0.1)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

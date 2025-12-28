@@ -29,37 +29,37 @@ export default function DiscountShowcase() {
 
     if (activeDiscounts.length === 0) return null;
 
-    // Brand colors for visual variety
+    // Brand colors matching velvet theme
     const brandColors = [
-        'from-blue-400 to-blue-600',
-        'from-red-400 to-red-600',
-        'from-purple-400 to-purple-600',
-        'from-yellow-400 to-yellow-600',
-        'from-green-400 to-green-600',
-        'from-pink-400 to-pink-600'
+        'from-velvet-purple to-purple-700',
+        'from-velvet-golden to-amber-600',
+        'from-purple-500 to-velvet-purple',
+        'from-amber-500 to-velvet-golden',
+        'from-rose-400 to-purple-600',
+        'from-fuchsia-500 to-velvet-purple'
     ];
 
     return (
-        <div className="py-16 bg-gradient-to-b from-blue-100 via-sky-50 to-indigo-100">
+        <div className="py-16 bg-gradient-to-b from-purple-100 via-amber-50 to-purple-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="text-center mb-12 relative">
-                    {/* Decorative globe icon */}
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-4 shadow-lg">
+                    {/* Decorative tag icon */}
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-velvet-purple to-purple-700 rounded-full mb-4 shadow-lg">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                         </svg>
                     </div>
 
-                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent mb-3">
-                        Global Brands, Great Deals!
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-velvet-purple via-purple-600 to-velvet-purple bg-clip-text text-transparent mb-3">
+                        Exclusive Offers & Deals!
                     </h2>
 
                     {/* Decorative line */}
                     <div className="flex items-center justify-center gap-2 mb-4">
-                        <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-blue-500"></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-blue-500"></div>
+                        <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-velvet-golden"></div>
+                        <div className="w-2 h-2 bg-velvet-golden rounded-full"></div>
+                        <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-velvet-golden"></div>
                     </div>
 
                     <p className="text-lg text-gray-600">
@@ -79,7 +79,7 @@ export default function DiscountShowcase() {
                                 {/* Discount Badge */}
                                 <div className="text-center mb-3">
                                     <div className="text-4xl font-bold mb-1">
-                                        {discount.type === 'percentage' ? `${discount.value}%` : `₹${discount.value}`}
+                                        {discount.type === 'percentage' ? `${discount.value}%` : `₹${(discount.value / 100).toFixed(2)}`}
                                     </div>
                                     <div className="text-sm font-semibold uppercase tracking-wide">
                                         {discount.type === 'percentage' ? 'OFF' : 'FLAT'}
@@ -95,7 +95,7 @@ export default function DiscountShowcase() {
                                 {/* Minimum Order Info */}
                                 {discount.minOrderValue > 0 && (
                                     <div className="mt-3 text-xs opacity-90">
-                                        Min. Order: ₹{discount.minOrderValue}
+                                        Min. Order: ₹{(discount.minOrderValue / 100).toFixed(2)}
                                     </div>
                                 )}
                             </div>

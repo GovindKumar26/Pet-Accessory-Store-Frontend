@@ -59,6 +59,9 @@ function App() {
         <PawBackground opacity={0.015} count={4} />
         <Navbar />
 
+        {/* Spacer for fixed navbar */}
+        <div className="h-16"></div>
+
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Public Routes */}

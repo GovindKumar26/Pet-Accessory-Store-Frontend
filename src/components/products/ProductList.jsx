@@ -6,7 +6,7 @@ import ProductCard from '@/components/products/ProductCard.jsx';
 import HeroBanner from '@/components/landing/HeroBanner.jsx';
 import FeaturedProducts from '@/components/landing/FeaturedProducts.jsx';
 import CategoryShowcase from '@/components/landing/CategoryShowcase.jsx';
-import DiscountShowcase from '@/components/landing/DiscountShowcase.jsx';
+import TrustBadges from '@/components/landing/TrustBadges.jsx';
 
 export default function ProductList() {
   const dispatch = useDispatch();
@@ -61,9 +61,9 @@ export default function ProductList() {
       {showLanding && (
         <>
           <HeroBanner onShopNow={scrollToProducts} />
+          <TrustBadges />
           <FeaturedProducts products={items} />
           <CategoryShowcase />
-          <DiscountShowcase />
 
           {/* Browse All Products Button */}
           <div className="py-16 bg-gradient-to-r from-purple-100 via-pink-50 to-rose-100 text-center">
