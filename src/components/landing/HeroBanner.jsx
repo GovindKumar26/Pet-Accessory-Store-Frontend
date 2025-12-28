@@ -196,7 +196,7 @@ export default function HeroBanner({ onShopNow }) {
                                 </p>
                                 <button
                                     onClick={onShopNow}
-                                    className="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg cursor-pointer"
+                                    className="inline-block px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base md:text-lg font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg cursor-pointer"
                                 >
                                     {slide.cta}
                                 </button>
