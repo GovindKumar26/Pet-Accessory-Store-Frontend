@@ -36,8 +36,7 @@ const VerifyEmail = lazy(() => import('@/components/auth/VerifyEmail.jsx'));
 // Policy Pages
 const RefundPolicy = lazy(() => import('@/components/policies/RefundPolicy.jsx'));
 const PolicyPages = lazy(() => import('@/components/policies/PolicyPages.jsx').then(m => ({ default: m.PrivacyPolicy })));
-const TermsConditions = lazy(() => import('@/components/policies/PolicyPages.jsx').then(m => ({ default: m.TermsConditions })));
-const ShippingPolicy = lazy(() => import('@/components/policies/PolicyPages.jsx').then(m => ({ default: m.ShippingPolicy })));
+const TermsConditions = lazy(() => import('@/components/policies/TermsConditions.jsx'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -74,7 +73,6 @@ function App() {
             <Route path="/return-policy" element={<RefundPolicy />} />
             <Route path="/privacy-policy" element={<PolicyPages />} />
             <Route path="/terms" element={<TermsConditions />} />
-            <Route path="/shipping-policy" element={<ShippingPolicy />} />
 
             {/* Product Routes */}
             <Route path="/products" element={<ProductList />} />

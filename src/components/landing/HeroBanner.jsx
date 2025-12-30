@@ -102,7 +102,7 @@ export default function HeroBanner({ onShopNow }) {
                             style={{ transform: `translateX(-${currentDiscountIndex * 100}%)` }}
                         >
                             {activeDiscounts.map((discount, index) => (
-                                <div className="min-w-full flex-shrink-0">
+                                <div key={discount._id || index} className="min-w-full flex-shrink-0">
                                     <div className="text-center px-2 sm:px-4">
                                         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-white">
                                             {/* Special Offer Badge */}

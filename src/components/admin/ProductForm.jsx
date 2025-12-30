@@ -18,7 +18,13 @@ export default function ProductForm() {
     price: '',
     category: '',
     inventory: '',
-    tags: ''
+    tags: '',
+    size: '',
+    color: '',
+    length: '10',
+    breadth: '10',
+    height: '10',
+    weight: '0.5'
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -40,7 +46,13 @@ export default function ProductForm() {
         price: currentProduct.price ? (currentProduct.price / 100).toFixed(2) : '',
         category: currentProduct.category || '',
         inventory: currentProduct.inventory || '',
-        tags: currentProduct.tags ? currentProduct.tags.join(', ') : ''
+        tags: currentProduct.tags ? currentProduct.tags.join(', ') : '',
+        size: currentProduct.size || '',
+        color: currentProduct.color || '',
+        length: currentProduct.dimensions?.length || '10',
+        breadth: currentProduct.dimensions?.breadth || '10',
+        height: currentProduct.dimensions?.height || '10',
+        weight: currentProduct.dimensions?.weight || '0.5'
       });
       if (currentProduct.images && currentProduct.images.length > 0) {
         setImagePreviews(currentProduct.images.map(img => img.url || img));
@@ -89,6 +101,22 @@ export default function ProductForm() {
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
       productData.append('tags', tagsArray.join(','));
     }
+
+    // Add size and color if provided
+    if (formData.size && formData.size.trim()) {
+      productData.append('size', formData.size.trim());
+    }
+    if (formData.color && formData.color.trim()) {
+      productData.append('color', formData.color.trim());
+    }
+
+    // Add dimensions
+    productData.append('dimensions', JSON.stringify({
+      length: parseFloat(formData.length) || 10,
+      breadth: parseFloat(formData.breadth) || 10,
+      height: parseFloat(formData.height) || 10,
+      weight: parseFloat(formData.weight) || 0.5
+    }));
 
     // Append all image files
     if (imageFiles.length > 0) {
@@ -240,6 +268,123 @@ export default function ProductForm() {
               />
             </div>
 
+          </div>
+        </div>
+
+        {/* Product Attributes */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Product Attributes</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="size" className="block text-sm font-medium text-gray-700">
+                Size
+              </label>
+              <input
+                type="text"
+                id="size"
+                name="size"
+                value={formData.size}
+                onChange={handleChange}
+                placeholder="e.g., Small, Medium, Large"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="color" className="block text-sm font-medium text-gray-700">
+                Color
+              </label>
+              <input
+                type="text"
+                id="color"
+                name="color"
+                value={formData.color}
+                onChange={handleChange}
+                placeholder="e.g., Red, Blue, Black"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Shipping Dimensions */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Shipping Dimensions</h2>
+          <p className="text-sm text-gray-500">Used for accurate shipping cost calculation</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label htmlFor="length" className="block text-sm font-medium text-gray-700">
+                Length (cm) *
+              </label>
+              <input
+                type="number"
+                id="length"
+                name="length"
+                required
+                step="0.1"
+                min="0"
+                value={formData.length}
+                onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="breadth" className="block text-sm font-medium text-gray-700">
+                Width (cm) *
+              </label>
+              <input
+                type="number"
+                id="breadth"
+                name="breadth"
+                required
+                step="0.1"
+                min="0"
+                value={formData.breadth}
+                onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="height" className="block text-sm font-medium text-gray-700">
+                Height (cm) *
+              </label>
+              <input
+                type="number"
+                id="height"
+                name="height"
+                required
+                step="0.1"
+                min="0"
+                value={formData.height}
+                onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="weight" className="block text-sm font-medium text-gray-700">
+                Weight (kg) *
+              </label>
+              <input
+                type="number"
+                id="weight"
+                name="weight"
+                required
+                step="0.01"
+                min="0"
+                value={formData.weight}
+                onChange={handleChange}
+                onWheel={(e) => e.target.blur()}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
         </div>
 

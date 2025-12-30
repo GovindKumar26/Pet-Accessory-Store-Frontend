@@ -21,7 +21,8 @@ export default function DiscountForm() {
         usageLimit: '',
         description: '',
         minOrderValue: '',
-        maxDiscountAmount: ''
+        maxDiscountAmount: '',
+        firstTimeOnly: false
     });
 
     useEffect(() => {
@@ -47,7 +48,8 @@ export default function DiscountForm() {
                 usageLimit: currentDiscount.usageLimit || '',
                 description: currentDiscount.description || '',
                 minOrderValue: currentDiscount.minOrderValue ? (currentDiscount.minOrderValue / 100).toFixed(2) : '',
-                maxDiscountAmount: currentDiscount.maxDiscountAmount ? (currentDiscount.maxDiscountAmount / 100).toFixed(2) : ''
+                maxDiscountAmount: currentDiscount.maxDiscountAmount ? (currentDiscount.maxDiscountAmount / 100).toFixed(2) : '',
+                firstTimeOnly: currentDiscount.firstTimeOnly ?? false
             });
         }
     }, [currentDiscount, isEditMode]);
@@ -78,6 +80,7 @@ export default function DiscountForm() {
         if (formData.description) discountData.description = formData.description;
         if (formData.minOrderValue) discountData.minOrderValue = parseFloat(formData.minOrderValue).toFixed(2);
         if (formData.maxDiscountAmount) discountData.maxDiscountAmount = parseFloat(formData.maxDiscountAmount).toFixed(2);
+        discountData.firstTimeOnly = formData.firstTimeOnly;
 
         try {
             if (isEditMode) {
@@ -255,6 +258,27 @@ export default function DiscountForm() {
                             placeholder="Leave empty for unlimited"
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         />
+                    </div>
+
+                    <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                            <input
+                                type="checkbox"
+                                id="firstTimeOnly"
+                                name="firstTimeOnly"
+                                checked={formData.firstTimeOnly}
+                                onChange={handleChange}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                        </div>
+                        <div className="ml-3">
+                            <label htmlFor="firstTimeOnly" className="font-medium text-gray-700">
+                                First-time customers only
+                            </label>
+                            <p className="text-sm text-gray-500">
+                                This discount will only work for users with no previous completed orders
+                            </p>
+                        </div>
                     </div>
                 </div>
 
