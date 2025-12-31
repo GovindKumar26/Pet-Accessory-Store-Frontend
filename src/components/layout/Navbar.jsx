@@ -60,21 +60,12 @@ export default function Navbar() {
     <nav className="bg-white fixed top-0 left-0 right-0 z-50" style={{ boxShadow: '0 10px 25px -5px rgba(92, 57, 117, 0.15), 0 8px 10px -6px rgba(92, 57, 117, 0.1)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center">
             <img
-              src="/logo/Color logo - no background.svg"
+              src="/logo/Color logo - no background rect.svg"
               alt="The Velvet Tails"
               className="h-12 w-auto"
             />
-            <div className="hidden sm:block">
-              <div className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-velvet-purple via-purple-700 to-velvet-purple bg-clip-text text-transparent" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-                The Velvet Tails
-              </div>
-              <div className="text-[10px] sm:text-xs font-medium text-gray-500 tracking-wide -mt-0.5" style={{ letterSpacing: '0.05em' }}>
-                Where Paws Meet Plush
-              </div>
-            </div>
           </Link>
 
           {/* Desktop Navigation */}

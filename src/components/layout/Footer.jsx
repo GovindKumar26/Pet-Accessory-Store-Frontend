@@ -51,7 +51,7 @@ export default function Footer() {
                             <img
                                 src="/logo/Color logo - no background.svg"
                                 alt="The Velvet Tails"
-                                className="h-12 w-auto brightness-0 invert"
+                                className="h-12 w-auto"
                             />
                         </Link>
                         <p className="text-gray-400 text-sm mb-4">
