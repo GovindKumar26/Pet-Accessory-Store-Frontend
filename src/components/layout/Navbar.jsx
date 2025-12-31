@@ -68,8 +68,12 @@ export default function Navbar() {
               className="h-12 w-auto"
             />
             <div className="hidden sm:block">
-              <div className="text-xl font-bold text-gray-900">The Velvet Tails</div>
-              <div className="text-xs text-gray-600 -mt-1">Where Paws Meet Plush</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-velvet-purple via-purple-700 to-velvet-purple bg-clip-text text-transparent" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+                The Velvet Tails
+              </div>
+              <div className="text-[10px] sm:text-xs font-medium text-gray-500 tracking-wide -mt-0.5" style={{ letterSpacing: '0.05em' }}>
+                Where Paws Meet Plush
+              </div>
             </div>
           </Link>
 
